@@ -12,7 +12,6 @@ class GraphDatabase:
    def query(self, cypher):
       
       try:
-         print cypher
          self.__tx = self.__graph.cypher.begin()
          self.__tx.append(cypher)
          self.__tx.commit()
