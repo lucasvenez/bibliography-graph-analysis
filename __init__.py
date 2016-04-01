@@ -27,6 +27,10 @@ blacklist = [
 "three", "four", "five" "six", "seven", "nine", "ten", "eleven", "hundred", "not", "no", "yes", "maybe", "based", "using", "show", "such", "use"
 ] + list(string.ascii_lowercase)
 #
+# Regular expression to exclude characters from words, titles, and author names
+reg = "[\\?\\.!/;:,\\(\\)\\[\\]\\{\\}\\*&%\\$#@\\^~`=\\+_\'\"\\\\]".encode(sys.stdout.encoding, errors = 'replace')
+
+#
 #
 print "Loading file... ",
 #
@@ -49,61 +53,84 @@ print "[OK]"
 #
 # For each bibliography do
 for entry in bib_database.entries:
-   #
-   # If bibliography have no any of author, abstract or year attribute exclude it
-   if 'author' not in entry or 'abstract' not in entry or 'year' not in entry: continue
-   #
-   # If the bibliography have all required attribute count it
-   numberOfIncludedPapers += 1
-   #
-   # Writing the paper title to visualize the process
-   print "[" + `numberOfIncludedPapers` + "] " + entry["title"] 
-   #
-   # Pre-processing and converting encoding of the title content
-   entry["title"] = entry["title"].strip().lower().replace("\\", "").encode(sys.stdout.encoding, errors='replace')
-   #
-   # Converting and pre-processing year content
-   entry["year"]  = entry["year"].strip().lower().replace("\\", "").encode(sys.stdout.encoding, errors='replace')
-   #
-   # Persisting title as a node
-   graphDatabase.query("MERGE (p:Paper {title: \"" + entry["title"] + "\", year: " + entry["year"] + "});")
-   #
-   # For each author of the paper do
-   for author in entry["author"].split(" and"):
+   
+   try:
       #
-      # Converting encoding
-      author = author.strip().lower().encode(sys.stdout.encoding, errors='replace').replace("\\", "")
+      # If bibliography have no any of author, abstract or year attribute exclude it
+      if 'author' not in entry or 'abstract' not in entry or 'year' not in entry: continue
       #
-      # Persisting author as a node
-      graphDatabase.query("MERGE (n:Author {name: \"" +  author + "\"});")
+      # Starting database transaction 
+      graphDatabase.startTransaction()
       #
-      # Creating a relationship between paper and author 
-      graphDatabase.query("MATCH (n:Author {name: \"" +  author + "\"}), (p:Paper {title: \"" + entry["title"] + "\"}) " + 
-                          "CREATE UNIQUE (n)-[:WRITE]-(p);")
-
-   #
-   # Regular expression to exclude characters from words
-   reg = "[ ?\\.!/;:,\\(\\)\\[\\]\\{\\}*&%\\$#@\\^~`=\\+_\'\"]".encode(sys.stdout.encoding, errors = 'replace')
-   #
-   # Removing some characters from words
-   words = [re.sub(reg, '', x.strip().lower()) 
-            for x in entry["abstract"].split(" ") 
-            if re.sub(reg, '', x.strip().lower().strip()) 
-               not in blacklist and not x.strip().isdigit()]
-            
-   #
-   # For each word do
-   for word in words:
+      # If the bibliography have all required attribute count it
+      numberOfIncludedPapers += 1
       #
-      # Pre-processing and converting encoding of the word
-      word = word.replace("\\", "").replace(".", "").encode(sys.stdout.encoding, errors='replace')
+      # Writing the paper title to visualize the process
+      print "[" + `numberOfIncludedPapers` + "] " + entry["title"] 
       #
-      # Persisting the word as a node
-      graphDatabase.query("MERGE (w:Word {value: \"" + word + "\"});")
+      # Pre-processing and converting encoding of the title content
+      entry["title"] = entry["title"].strip().lower().encode(sys.stdout.encoding, errors='replace')
       #
-      # Creating a relationship between word and paper
-      graphDatabase.query("MATCH (w:Word {value: \"" +  word + "\"}), (p:Paper {title: \"" + entry["title"] + "\"}) " + 
-                          "CREATE UNIQUE (p)-[:CONTAINS]-(w);")
+      # Applying regular expression filter
+      entry["title"] = re.sub(reg, '', entry["title"])
+      #
+      # Converting and pre-processing year content
+      entry["year"]  = entry["year"].strip().lower().encode(sys.stdout.encoding, errors='replace')
+      #
+      # Persisting title as a node
+      graphDatabase.query("MERGE (p:Paper {title: \"" + entry["title"] + "\", year: " + entry["year"] + "});")
+      #
+      # For each author of the paper do
+      for author in entry["author"].split(" and"):
+         #
+         # Converting encoding
+         author = author.strip().lower().encode(sys.stdout.encoding, errors='replace').replace("\\", "")
+         #
+         # Persisting author as a node
+         graphDatabase.query("MERGE (n:Author {name: \"" +  author + "\"});")
+         #
+         # Creating a relationship between paper and author 
+         graphDatabase.query("MATCH (n:Author {name: \"" +  author + "\"}), (p:Paper {title: \"" + entry["title"] + "\"}) " + 
+                             "CREATE UNIQUE (n)-[:WRITE]-(p);")
+   
+      #
+      # Removing some characters from words
+      words = [re.sub(reg, '', x.strip().lower()) 
+               for x in entry["abstract"].split(" ") 
+               if re.sub(reg, '', x.strip().lower().strip()) 
+                  not in blacklist and not x.strip().isdigit()]
+               
+      #
+      # For each word do
+      for word in words:
+         #
+         # Pre-processing and converting encoding of the word
+         word = word.replace(" ", "").encode(sys.stdout.encoding, errors='replace')
+         #
+         # Persisting the word as a node
+         graphDatabase.query("MERGE (w:Word {value: \"" + word + "\"});")
+         #
+         # Creating a relationship between word and paper
+         graphDatabase.query("MATCH (w:Word {value: \"" +  word + "\"}), (p:Paper {title: \"" + entry["title"] + "\"}) " + 
+                             "CREATE UNIQUE (p)-[:CONTAINS]-(w);")
+   
+      #
+      # Commiting transaction
+      graphDatabase.commit()
+      
+   except Exception as exp:
+      #
+      # Rollbacking transaction
+      graphDatabase.rollback()
+      #
+      # Printing error type and message
+      print ">>> " + repr(exp)
+      #
+      # Discounting included paper
+      numberOfIncludedPapers -= 1
+      #
+      # Please, keep going
+      continue
 #
 # Good bye
 print "Finished. We import " + `numberOfIncludedPapers` + " papers"

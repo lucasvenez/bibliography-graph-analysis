@@ -9,11 +9,15 @@ class GraphDatabase:
       
       self.__graph = Graph()
    
+   def startTransaction(self):
+      self.__tx = self.__graph.cypher.begin()
+   
    def query(self, cypher):
+      self.__tx.append(cypher)
       
-      try:
-         self.__tx = self.__graph.cypher.begin()
-         self.__tx.append(cypher)
-         self.__tx.commit()
-      except Exception, exp: 
-         print str(exp)
+   def commit(self):
+      self.__tx.commit()
+      
+   def rollback(self):
+      self.__tx.roolback()
+      
