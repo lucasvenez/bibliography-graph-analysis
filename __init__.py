@@ -85,4 +85,4 @@ with open('science.bib') as bibtex_file:
          graphDatabase.query("MATCH (w:Word {value: \"" +  word + "\"}), (p:Paper {title: \"" + entry["title"] + "\"}) " + 
                              "CREATE UNIQUE (p)-[:CONTAINS]-(w);")
    
-   print "Finished. We import " + i + " papers"
+   print "Finished. We import " + `i` + " papers"
