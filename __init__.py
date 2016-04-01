@@ -29,13 +29,12 @@ blacklist = [
 #
 # Regular expression to exclude characters from words, titles, and author names
 reg = "[\\?\\.!/;:,\\(\\)\\[\\]\\{\\}\\*&%\\$#@\\^~`=\\+_\'\"\\\\]".encode(sys.stdout.encoding, errors = 'replace')
-
 #
 #
 print "Loading file... ",
 #
 # Loading bibtex file
-bibtex_file = open('complex-network-1996-less.bib')
+bibtex_file = open('dataset/complex-network-1996-less.bib')
 #
 # Connecting to the neo4j
 graphDatabase = GraphDatabase(password = "password")
@@ -53,7 +52,8 @@ print "Done with " + `len(bib_database.entries)` + " papers."
 #
 # For each bibliography do
 for entry in bib_database.entries:
-   
+   #
+   #
    try:
       #
       # If bibliography have no any of author, abstract or year attribute exclude it
@@ -107,6 +107,9 @@ for entry in bib_database.entries:
          # Pre-processing and converting encoding of the word
          word = word.replace(" ", "").encode(sys.stdout.encoding, errors='replace')
          #
+         # If word is empty continue
+         if word == "": continue
+         #
          # Persisting the word as a node
          graphDatabase.query("MERGE (w:Word {value: \"" + word + "\"});")
          #
@@ -117,7 +120,8 @@ for entry in bib_database.entries:
       #
       # Commiting transaction
       graphDatabase.commit()
-      
+   #
+   #
    except Exception as exp:
       #
       # Rollbacking transaction
