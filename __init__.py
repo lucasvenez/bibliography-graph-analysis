@@ -35,7 +35,7 @@ reg = "[\\?\\.!/;:,\\(\\)\\[\\]\\{\\}\\*&%\\$#@\\^~`=\\+_\'\"\\\\]".encode(sys.s
 print "Loading file... ",
 #
 # Loading bibtex file
-bibtex_file = open('complex-network.bib')
+bibtex_file = open('complex-network-1996-less.bib')
 #
 # Connecting to the neo4j
 graphDatabase = GraphDatabase(password = "password")
@@ -49,7 +49,7 @@ bib_database = bibtexparser.load(bibtex_file, parser = parser)
 numberOfIncludedPapers = 0
 #
 #
-print "[OK]"
+print "Done with " + `len(bib_database.entries)` + " papers."
 #
 # For each bibliography do
 for entry in bib_database.entries:
