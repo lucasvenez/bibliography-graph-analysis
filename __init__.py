@@ -9,6 +9,8 @@ from bibtexparser.customization import convert_to_unicode
 
 from GraphDatabase import GraphDatabase
 
+#
+# List of words to be excluded from the graph .
 blacklist = [
 "a", "an", "and", "nor", "or", "yet", "so", "as", "at", "and", "of", "the", "is", "can", "results", "moreover", "shown", "both", "ii", 
 "on", "or", "in", "to", "by", "aboard", "about", "above", "across", "after", "against", "along", "which", "proposed", "furthermore", "either", "iii",
@@ -27,57 +29,83 @@ blacklist = [
 
 print "Loading file... ",
 
-with open('complex-network.bib') as bibtex_file:
+#
+# Loading bibtex file
+bibtex_file = open('complex-network.bib')
 
-   graphDatabase = GraphDatabase(password = "password")
+#
+# Connecting to the neo4j
+graphDatabase = GraphDatabase(password = "password")
 
-   parser = BibTexParser()
+#
+# Parsing the bibtex
+parser = BibTexParser()
+parser.customization = convert_to_unicode
+bib_database = bibtexparser.load(bibtex_file, parser = parser)
+#
+# Counting the number of included papers
+numberOfIncludedPapers = 0
+#
+#
+print "[OK]"
+#
+# For each bibliography do
+for entry in bib_database.entries:
+   #
+   # If bibliography have no any of author, abstract or year attribute exclude it
+   if 'author' not in entry or 'abstract' not in entry or 'year' not in entry: continue
+   #
+   # If the bibliography have all required attribute count it
+   numberOfIncludedPapers += 1
+   #
+   # Writing the paper title to visualize the process
+   print "[" + `numberOfIncludedPapers` + "] " + entry["title"] 
+   #
+   # Pre-processing and converting encoding of the title content
+   entry["title"] = entry["title"].strip().lower().replace("\\", "").encode(sys.stdout.encoding, errors='replace')
+   #
+   # Converting and pre-processing year content
+   entry["year"]  = entry["year"].strip().lower().replace("\\", "").encode(sys.stdout.encoding, errors='replace')
+   #
+   # Persisting title as a node
+   graphDatabase.query("MERGE (p:Paper {title: \"" + entry["title"] + "\", year: " + entry["year"] + "});")
+   #
+   # For each author of the paper do
+   for author in entry["author"].split(" and"):
+      #
+      # Converting encoding
+      author = author.strip().lower().encode(sys.stdout.encoding, errors='replace').replace("\\", "")
+      #
+      # Persisting author as a node
+      graphDatabase.query("MERGE (n:Author {name: \"" +  author + "\"});")
+      #
+      # Creating a relationship between paper and author 
+      graphDatabase.query("MATCH (n:Author {name: \"" +  author + "\"}), (p:Paper {title: \"" + entry["title"] + "\"}) " + 
+                          "CREATE UNIQUE (n)-[:WRITE]-(p);")
 
-   parser.customization = convert_to_unicode
-
-   bib_database = bibtexparser.load(bibtex_file, parser = parser)
-
-   i = 0
-
-   print "[OK]"
-   
-   for entry in bib_database.entries:
-
-      if 'author' not in entry or 'abstract' not in entry or 'year' not in entry: continue
-
-      i += 1
-
-      print "[" + `i` + "] " + entry["title"] 
-
-      entry["title"] = entry["title"].strip().lower().replace("\\", "").encode(sys.stdout.encoding, errors='replace')
-      
-      entry["year"]  = entry["year"].strip().lower().replace("\\", "").encode(sys.stdout.encoding, errors='replace')
-      
-      graphDatabase.query("MERGE (p:Paper {title: \"" + entry["title"] + "\", year: " + entry["year"] + "});")
-      
-      for author in entry["author"].split(" and"):
-
-         author = author.strip().lower().encode(sys.stdout.encoding, errors='replace').replace("\\", "")
-
-         graphDatabase.query("MERGE (n:Author {name: \"" +  author + "\"});")
+   #
+   # Regular expression to exclude characters from words
+   reg = "[ ?\\.!/;:,\\(\\)\\[\\]\\{\\}*&%\\$#@\\^~`=\\+_\'\"]".encode(sys.stdout.encoding, errors = 'replace')
+   #
+   # Removing some characters from words
+   words = [re.sub(reg, '', x.strip().lower()) 
+            for x in entry["abstract"].split(" ") 
+            if re.sub(reg, '', x.strip().lower().strip()) 
+               not in blacklist and not x.strip().isdigit()]
             
-         graphDatabase.query("MATCH (n:Author {name: \"" +  author + "\"}), (p:Paper {title: \"" + entry["title"] + "\"}) " + 
-                             "CREATE UNIQUE (n)-[:WRITE]-(p);")
-
-      reg = "[ ?\\.!/;:,\\(\\)\\[\\]\\{\\}*&%\\$#@\\^~`=\\+_\'\"]".encode(sys.stdout.encoding, errors = 'replace')
-      
-      words = [re.sub(reg, '', x.strip().lower()) 
-               for x in entry["abstract"].split(" ") 
-               if re.sub(reg, '', x.strip().lower().strip()) 
-                  not in blacklist and not x.strip().isdigit()]
-               
-      for word in words:
-         
-         word = word.replace("\\", "").replace(".", "").encode(sys.stdout.encoding, errors='replace')
-         
-         graphDatabase.query("MERGE (w:Word {value: \"" + word + "\"});")
-         
-         graphDatabase.query("MATCH (w:Word {value: \"" +  word + "\"}), (p:Paper {title: \"" + entry["title"] + "\"}) " + 
-                             "CREATE UNIQUE (p)-[:CONTAINS]-(w);")
-   
-   print "Finished. We import " + `i` + " papers"
+   #
+   # For each word do
+   for word in words:
+      #
+      # Pre-processing and converting encoding of the word
+      word = word.replace("\\", "").replace(".", "").encode(sys.stdout.encoding, errors='replace')
+      #
+      # Persisting the word as a node
+      graphDatabase.query("MERGE (w:Word {value: \"" + word + "\"});")
+      #
+      # Creating a relationship between word and paper
+      graphDatabase.query("MATCH (w:Word {value: \"" +  word + "\"}), (p:Paper {title: \"" + entry["title"] + "\"}) " + 
+                          "CREATE UNIQUE (p)-[:CONTAINS]-(w);")
+#
+# Good bye
+print "Finished. We import " + `numberOfIncludedPapers` + " papers"
