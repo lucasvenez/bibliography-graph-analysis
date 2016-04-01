@@ -26,17 +26,15 @@ blacklist = [
 "whom", "this", "these", "there", "those", "been", "done", "did", "do", "its", "however", "one", "two", "our", "often", "main", "same", "vs", "must",
 "three", "four", "five" "six", "seven", "nine", "ten", "eleven", "hundred", "not", "no", "yes", "maybe", "based", "using", "show", "such", "use"
 ] + list(string.ascii_lowercase)
-
+#
+#
 print "Loading file... ",
-
 #
 # Loading bibtex file
 bibtex_file = open('complex-network.bib')
-
 #
 # Connecting to the neo4j
 graphDatabase = GraphDatabase(password = "password")
-
 #
 # Parsing the bibtex
 parser = BibTexParser()

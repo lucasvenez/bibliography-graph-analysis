@@ -1,6 +1,9 @@
-# Projeto Bimestral - CT236 - 1∫ Semestre de 2016 - ITA
+Instituto Tecnol√≥gico de Aerona√∫tica
+====================================
+`Projeto Bimestral da Disciplina CT236 - Redes Sociais Complexas`
+------------------------------------------------------------------------
 
-Este projeto foi elaborado para analisar a estrutura din‚mica de redes complexas sobre publicaÁıes ciÍntÌficas na ·rea de `Sistemas Complexos`. 
+Este projeto foi elaborado para analisar a estrutura din√¢mica de redes complexas sobre publica√ß√µes cient√≠ficas da √°rea de [Sistemas Complexos](http://www.sciencedirect.com/science?_ob=ArticleListURL&_method=list&_ArticleListID=-966244572&_sort=r&_st=13&view=c&md5=8821da620d36f7f5f249e9a870e1a2e8&searchtype=a). 
 
 O trabalho foi desenvolvido por:
 - Lucas Venezian Povoa
