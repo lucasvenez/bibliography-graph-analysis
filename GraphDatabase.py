@@ -19,5 +19,5 @@ class GraphDatabase:
       self.__tx.commit()
       
    def rollback(self):
-      self.__tx.roolback()
+      self.__tx.rollback()
       
