@@ -34,7 +34,7 @@ reg = "[\\?\\.!/;:,\\(\\)\\[\\]\\{\\}\\*&%\\$#@\\^~`=\\+_\'\"\\\\]".encode(sys.s
 print "Loading file... ",
 #
 # Loading bibtex file
-bibtex_file = open('dataset/complex-network-1996-less.bib')
+bibtex_file = open('dataset/complex-network-2000.bib')
 #
 # Connecting to the neo4j
 graphDatabase = GraphDatabase(password = "password")
@@ -137,4 +137,4 @@ for entry in bib_database.entries:
       continue
 #
 # Good bye
-print "Finished. We import " + `numberOfIncludedPapers` + " papers"
+print "Finished. It was imported " + `numberOfIncludedPapers` + " papers"
