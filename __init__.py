@@ -18,7 +18,7 @@ blacklist = [
 "besides", "between", "beyond", "but", "by", "concerning", "considering", "despite", "down", "during", "also", "used", "such", "presented", "vi", 
 "except", "excepting", "excluding", "following", "for", "from", "in", "inside", "into", "like", "occurs", "each", "most", "then", "could", "vii",
 "minus", "near", "of", "off", "on", "onto", "opposite", "outside", "over", "past", "per", "does", "well", "first", "present", "only", "viii", "ones",
-"plus", "regarding", "round", "save", "since", "than", "through", "to", "toward", "towards", "occur", "make", "many", "further", "need", "ie", "other"
+"plus", "regarding", "round", "save", "since", "than", "through", "to", "toward", "towards", "occur", "make", "many", "further", "need", "ie", "other",
 "under", "underneath", "unlike", "until", "up", "upon", "versus", "via", "with", "within", "paper", "again", "may", "due", "finally", "ix", "xi", "new",
 "without", "abstract", "aim", "aiming", "once", "because", "since", "why", "how", "if", "whether", "some", "them", "very", "second", "thus", "xii",
 "where", "wherever", "whereas", "than", "much", "though", "until", "when", "while", "be", "was", "were", "that", "addition", "some", "had", "xiii",
@@ -34,7 +34,7 @@ reg = "[\\?\\.!/;:,\\(\\)\\[\\]\\{\\}\\*&%\\$#@\\^~`=\\+_\'\"\\\\]".encode(sys.s
 print "Loading file... ",
 #
 # Loading bibtex file
-bibtex_file = open('dataset/complex-network-2000.bib')
+bibtex_file = open('dataset/complex-network-2005.bib')
 #
 # Connecting to the neo4j
 graphDatabase = GraphDatabase(password = "password")

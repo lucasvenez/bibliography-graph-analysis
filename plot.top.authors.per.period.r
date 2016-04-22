@@ -7,31 +7,38 @@ graph = startGraph("http://localhost:7474/db/data/", username = "neo4j", passwor
 
 top.authors.per.period <- data.frame()
 
-for (i in 0:2) {
+for (i in 0:4) {
 
   start <- 2000 + (i * 5)
   end   <- start + 4
   
   top.authors <- 
     cypher(graph,
-           "MATCH (a:Author)-[:WRITE]-(p:Paper) 
-            WHERE p.year >= {start} AND p.year <= {end}
-            RETURN a.name, COUNT(p) AS numberOfPapers 
-            ORDER BY numberOfPapers DESC, a.name LIMIT 10", start = start, end = end)
+           "MATCH (a:Author)--(p:Paper)
+           WHERE a.name IN ['jinde cao', 'haizhong an', 'guanrong chen', 'xiangyun gao', 'yong deng',
+                            'xingyuan wang', 'wuneng zhou', 'huaguang zhang', 'jürgen kurths',
+                            'ying fan', 'daijun wei', 'ernesto estrada', 'fang liu', 'hongtao lu',
+                            'huajiao li'] AND
+           p.year >= {start} AND p.year <= {end}
+           RETURN a.name, count(p) as numberOfPapers 
+           ORDER BY numberOfPapers DESC", start = start, end = end)
   
-  top.authors$a.name <- factor(top.authors$a.name, levels = top.authors$a.name)
+  if (!is.null(top.authors)) {
   
-  top.authors.per.period <- rbind(top.authors.per.period, cbind(top.authors, data.frame(period = paste(start, end, sep = "-"))))
+    top.authors$a.name <- factor(top.authors$a.name, levels = top.authors$a.name)
+  
+    top.authors.per.period <- rbind(top.authors.per.period, cbind(top.authors, data.frame(period = paste(start, end, sep = "-"))))
+  }
 }
 
 top.authors.per.period
 
 graph <- 
-  ggplot(top.authors.per.period) + 
-  geom_bar(aes(a.name, numberOfPapers), stat = "identity") +
-  theme(axis.text.x = element_text(angle = -45, hjust = 0), legend.position = "none") +
-  scale_fill_hue("Autor") + scale_colour_hue("Autor") +
-  xlab("Autor") + ylab("Número de publicações") +
-  facet_grid(. ~ period, scale = "free")
+  ggplot(top.authors.per.period, 
+         aes(a.name, numberOfPapers, colour = period, fill = period, group = period)) + 
+  geom_bar(stat = "identity") +
+  scale_fill_hue("Período") + scale_colour_hue("Período") +
+  theme(axis.text.x = element_text(angle = -45, hjust = 0)) +
+  xlab("Autor") + ylab("Número de publicações")
 
 ggsave("top.authors.per.periodo.pdf", graph, width = 6, height = 4, units = "in")

@@ -1,5 +1,5 @@
-#Grau de cada palavra
+# Grau de cada palavra
 MATCH (w:Word)--()
-RETURN w, count(*) as degree 
+RETURN w.value, count(*) as degree 
 ORDER BY degree DESC 
-LIMIT 100
+LIMIT 10
