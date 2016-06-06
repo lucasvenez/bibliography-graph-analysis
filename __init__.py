@@ -34,7 +34,7 @@ reg = "[0-9\\?\\.!/;:,\\(\\)\\[\\]\\{\\}\\*&%\\$#@\\^~`=\\+_\'\"\\\\]".encode(sy
 print "Loading file... ",
 #
 # Loading bibtex file
-bibtex_file = open('dataset/complex-network-2010.bib')
+bibtex_file = open('dataset/complex-network-1996-less.bib')
 #
 # Connecting to the neo4j
 graphDatabase = GraphDatabase(password = "password")
@@ -49,6 +49,27 @@ numberOfConsideredPapers = 0
 #
 #
 print "Done with " + `len(bib_database.entries)` + " papers."
+#
+#
+try:
+   #
+   #
+   graphDatabase.startTransaction()
+   #
+   #
+   graphDatabase.query("MATCH (n)-[r]-() DELETE r, n;")
+   #
+   #
+   graphDatabase.commit()
+   #
+   #
+except Exception as exp:
+   #
+   # Printing error type and message
+   print ">>> " + repr(exp)
+   #
+   # Rollbacking transaction
+   graphDatabase.rollback()
 #
 # For each bibliography do
 for entry in bib_database.entries:
