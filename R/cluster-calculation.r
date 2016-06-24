@@ -3,7 +3,7 @@
 #
 library(igraph)
 library(RNeo4j)
-library(visNetwork)
+library(parallel)
 #
 # Conectando no banco de dados
 #
@@ -19,25 +19,19 @@ edges = cypher(graph, query)
 #
 # Convertendo os data.frames para um tipo especifico do igraph
 #
-ig = graph_from_data_frame(edges, directed=F)
+ig = graph_from_data_frame(edges, directed = F)
 #
 # Calculando as comunidades
 # 
 clusters = cluster_fast_greedy(ig)
 #
-# Definindo as cores dos nós
-#
-V(ig)$color <- clusters$membership + 40
-#
 # Calculando o número de comunidades
 #
 numberOfCommunities <- length(clusters)
 #
-# Calculando o grau de cada nó
+# Degree
 #
-query <- "MATCH (w1)--(w2) RETURN w1.value AS node, 
-                COUNT(w2) AS degree ORDER BY degree DESC"
-nodesDegree <- cypher(graph, query)
+nodesDegree <- data.frame(nodes = names(degree(ig)), degree = as.numeric(degree(ig)))
 #
 # Calculando o numero de nós por comunidade
 #
@@ -51,7 +45,7 @@ for(i in 1:length(clusters))
 cl <- clusters(ig)
 giantComponentNodes <- V(induced.subgraph(ig, which(cl$membership == which.max(cl$csize))))
 
-giantComponentSize <- length(giantComponentNodes)
+giantComponentSize   <- length(giantComponentNodes)
 giantComponentTopTen <- head(subset(nodesDegree, node %in% row.names(as.matrix(giantComponentNodes))), n = 10)
 #
 # Calculando o nó com maior grau por comunidade
@@ -60,6 +54,36 @@ buzzwords <- list()
 
 for (i in 1:length(clusters))
   buzzwords[[i]] <- head(subset(nodesDegree, node %in% clusters[[i]]), n = 4)
+
+#####################################################################################################################
+# Centrality Metrics
+#
+# Degree
+#
+dg.mean <- mean(nodesDegree$degree)
+dg.sd   <- sd(nodesDegree$degree)
+#
+# Assortatividade
+#
+assortativity <- assortativity_degree(ig, directed = F)
+#
+# Shortest path 
+#
+sp <- shortest.paths(ig)
+sp.mean <- mean(sp)
+sp.sd   <- sd(sp)
+sp.max  <- max(sp) # radius
+sp.min  <- min(sp) # diameter
+#
+# Betweenness centrality
+#
+bt <- betweenness(ig)
+bt.mean <- mean(bt)
+bt.sd   <- sd(bt)
+#
+# Cluster coefficient
+#
+cluster.coefficient <- transitivity(ig)
 #
 # Saving data
 #
