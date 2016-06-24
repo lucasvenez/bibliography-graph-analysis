@@ -26,7 +26,7 @@ var createLayout = require('ngraph.offline.layout');
 
 var layout = createLayout(graph, {
 	outDir : './images',
-	layout: 'ngraph.forcelayout'
+	layout: 'ngraph.forcelayout3d'
 });
 try {
 layout.run();
