@@ -16,7 +16,8 @@ for (var i = 0; i < v.length; i++)
 var createLayout = require('ngraph.offline.layout');
 
 var layout = createLayout(graph, {
-	outDir : './images'
+	outDir : './images',
+	layout: 'ngraph.forcelayout'
 });
 try {
 layout.run();
