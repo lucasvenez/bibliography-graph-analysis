@@ -2,8 +2,8 @@
  * http://usejsdoc.org/
  */
 console.log("Start rendering");
-
-var v = require("./1996");
+var fs = require('fs');
+var v = JSON.parse(fs.readFileSync('./1996.js', 'utf8'));
 
 var createGraph = require('ngraph.graph');
 
@@ -17,8 +17,11 @@ var createLayout = require('ngraph.offline.layout');
 var layout = createLayout(graph, {
 	outDir : './images'
 });
-
+try {
 layout.run();
+} catch(e) {
+	
+}
 
 var save = require('ngraph.tobinary');
 
