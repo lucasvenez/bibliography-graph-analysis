@@ -7,10 +7,11 @@ var v = JSON.parse(fs.readFileSync('./1996.js', 'utf8'));
 
 var createGraph = require('ngraph.graph');
 
-var graph = createGraph();
+var graph = createGraph({uniqueLinkIds: false});
 
 for (var i = 0; i < v.length; i++)
-	graph.addLink(v[i].src, v[i].dst);
+	if (!graph.hasLink(v[i].src, v[i].dst))
+        graph.addLink(v[i].src, v[i].dst);
 
 var createLayout = require('ngraph.offline.layout');
 
