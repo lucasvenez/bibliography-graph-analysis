@@ -20,7 +20,7 @@ var layout = createLayout(graph, {
 try {
 layout.run();
 } catch(e) {
-	
+	console.log(e);
 }
 
 var save = require('ngraph.tobinary');
