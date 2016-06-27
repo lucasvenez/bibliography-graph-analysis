@@ -3,7 +3,7 @@
  */
 console.log("Start rendering");
 var fs = require('fs');
-var v = JSON.parse(fs.readFileSync('./js/2005.js', 'utf8'));
+var v = JSON.parse(fs.readFileSync('./js/2010.js', 'utf8'));
 
 var createGraph = require('ngraph.graph');
 
@@ -27,7 +27,7 @@ for (var i = 0; i < v.length; i++) {
 var createLayout = require('ngraph.offline.layout');
 
 var layout = createLayout(graph, {
-	outDir : './output',
+	outDir : './2010',
 	iterations: 1000,
 	saveEach: 500
 });
@@ -37,7 +37,7 @@ layout.run();
 var save = require('ngraph.tobinary');
 
 save(graph, {
-	outDir : './output'
+	outDir : './2010'
 })
 
 console.log("Rendering finished");
