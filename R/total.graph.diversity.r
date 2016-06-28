@@ -4,6 +4,8 @@
 #' Path diversification for future internet end-to-end resilience and survivability. 
 #' Telecommun Syst (2014) 56:49?67. DOI 10.1007/s11235-013-9818-7
 total.graph.diversity <- function(ig) {
+  memory.size(max = FALSE)
+  memory.limit(size = NA)
 	sp <- shortest.paths(ig)
 	
 	nodes <- V(ig)

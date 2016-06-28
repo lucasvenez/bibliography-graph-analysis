@@ -2,32 +2,27 @@
 # Carregando bibliotecas
 #
 library(igraph)
-library(RNeo4j)
-library(parallel)
 #
-# Conectando no banco de dados
+# Loading data
 #
-graph = startGraph("http://localhost:7474/db/data/", username = "neo4j", password = "password")
-#
-# Definindo consulta limitada a 200 linhas para teste
-#
-query = "MATCH (w1)-->(w2) RETURN w1.value AS from, w2.value AS to"
-#
-# Executando a consulta gerando um data.frame com as colunas from e to represetando as arestas
-#
-edges = cypher(graph, query)
-#
-# Convertendo os data.frames para um tipo especifico do igraph
-#
-ig = graph_from_data_frame(edges, directed = F)
+load("graph.1996.rda")
+load("graph.2000.rda")
+load("graph.2005.rda")
+load("graph.2010.rda")
 #
 # Calculando as comunidades
 # 
-clusters = cluster_fast_greedy(ig)
+clusters.1996 = cluster_fast_greedy(graph.1996)
+clusters.2000 = cluster_fast_greedy(graph.2000)
+clusters.2005 = cluster_fast_greedy(graph.2005)
+clusters.2010 = cluster_fast_greedy(graph.2010)
 #
 # Calculando o número de comunidades
 #
-numberOfCommunities <- length(clusters)
+clusters.1996.size <- length(clusters.1996)
+clusters.2000.size <- length(clusters.2000)
+clusters.2005.size <- length(clusters.2005)
+clusters.2010.size <- length(clusters.2010)
 #
 # Degree
 #
